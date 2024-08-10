@@ -1,9 +1,9 @@
 const router = require('express').Router();
 
-router.post('/login' , (res, res)=>{
+router.post('/login' , (req, res)=>{
     res.send('login success');
 });
-router.post('/signup' , (res, res)=>{
+router.post('/signup' , (req, res)=>{
     res.send('signup success');
 });
 module.exports = router;
