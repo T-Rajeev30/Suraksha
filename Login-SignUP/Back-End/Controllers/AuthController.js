@@ -1,9 +1,10 @@
 const bcrypt = require('bcrypt');
 const UserModel = require('../Models/user');
+const jwt = require('jsonwebtoken');  // Corrected typo here
 
 const signup = async (req, res) => {
     try {
-        const { firstName, lastName, DOB, email, phoneNumber, createPassword, Password, fourdigitPin } = req.body;
+        const { firstName, lastName, DOB, email, phoneNumber, password, fourdigitPin } = req.body;
 
         if (!email && !phoneNumber) {
             return res.status(400).json({
@@ -20,20 +21,18 @@ const signup = async (req, res) => {
             });
         }
 
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPin = await bcrypt.hash(fourdigitPin, 10);
+
         const newUser = new UserModel({
             firstName,
             lastName,
             DOB,
             email,
             phoneNumber,
-            createPassword,
-            Password,
-            fourdigitPin
+            password: hashedPassword,
+            fourdigitPin: hashedPin
         });
-
-        newUser.createPassword = await bcrypt.hash(createPassword, 10);
-        newUser.Password = await bcrypt.hash(Password, 10);
-        newUser.fourdigitPin = await bcrypt.hash(fourdigitPin, 10);
 
         await newUser.save();
 
@@ -54,13 +53,13 @@ const login = async (req, res) => {
     try {
         const { email, phoneNumber, fourdigitPin } = req.body;
 
-        // Validate input
         if (!fourdigitPin || (!email && !phoneNumber)) {
             return res.status(400).json({
                 message: 'Email or phone number and four-digit pin are required.',
                 success: false
             });
         }
+
         const user = await UserModel.findOne({ $or: [{ email }, { phoneNumber }] });
         if (!user) {
             return res.status(404).json({
@@ -69,7 +68,7 @@ const login = async (req, res) => {
             });
         }
 
-        const isPinMatch = await bcrypt.compare(fourdigitPin, user.fourdigitPin);
+        const isPinMatch = await bcrypt.compare(fourdigitPin, user.fourdigitPin);  
         if (!isPinMatch) {
             return res.status(401).json({
                 message: 'Invalid four-digit pin.',
@@ -77,9 +76,18 @@ const login = async (req, res) => {
             });
         }
 
+        const jwtToken = jwt.sign(
+            { email: user.email, _id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
         res.status(200).json({
-            message: 'Login successful',
-            success: true
+            message: "Login successful",
+            success: true,
+            jwtToken,
+            email,
+            name: `${user.firstName} ${user.lastName}` // Added full name response
         });
 
     } catch (err) {

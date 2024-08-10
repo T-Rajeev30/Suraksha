@@ -1,15 +1,17 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// Define the UserSchema
 const UserSchema = new Schema({
     firstName: {
         type: String,
         required: true,
+        trim: true
     },
     lastName: {
         type: String,
-        required: false, // Remove condition to simplify
+        required: false,
+        trim: true,
+        default: '' 
     },
     DOB: {
         type: Date, 
@@ -19,43 +21,38 @@ const UserSchema = new Schema({
         type: String,
         unique: true,
         sparse: true,
-        validate: {
-            validator: function (v) {
-                return !!v || !!this.phoneNumber; // Either email or phone number must be present
-            },
-            message: 'Either email or phone number must be provided.'
-        }
+        lowercase: true, 
+        trim: true
     },
     phoneNumber: {
         type: String,
         unique: true,
-        sparse: true, 
-        validate: {
-            validator: function (v) {
-                return !!v || !!this.email; // Either phone number or email must be present
-            },
-            message: 'Either email or phone number must be provided.'
-        }
+        sparse: true,
+        trim: true
     },
-    createPassword: {
-        type: String,
-        required: true,
-    },
-    Password: {
+    password: {  
         type: String,
         required: true,
     },
     fourdigitPin: {
-        type: Number,
+        type: String, 
         required: true,
         validate: {
             validator: function (v) {
-                return /^\d{4}$/.test(v);
+                return /^\d{4}$/.test(v); 
             },
-            message: 'Pin must be a 10-digit number.'
+            message: 'Pin must be a 4-digit number.'
         }
     }
+}, { timestamps: true }); 
+
+UserSchema.pre('validate', function(next) {
+    if (!this.email && !this.phoneNumber) {
+        this.invalidate('email', 'Either email or phone number must be provided.');
+        this.invalidate('phoneNumber', 'Either email or phone number must be provided.');
+    }
+    next();
 });
 
-const UserModel = mongoose.model('users', UserSchema);
+const UserModel = mongoose.model('User', UserSchema);
 module.exports = UserModel;
