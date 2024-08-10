@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth System</title>
+</head>
+<body>
+    <h1>User Authentication</h1>
+
+    <!-- Signup Form -->
+    <h2>Signup</h2>
+    <form id="signupForm">
+        <input type="text" id="firstName" placeholder="First Name" required><br>
+        <input type="text" id="lastName" placeholder="Last Name" required><br>
+        <input type="date" id="dob" placeholder="Date of Birth" required><br>
+        <input type="email" id="email" placeholder="Email"><br>
+        <input type="text" id="phoneNumber" placeholder="Phone Number"><br>
+        <input type="password" id="createPassword" placeholder="Create Password" required><br>
+        <input type="password" id="password" placeholder="Password" required><br>
+        <input type="number" id="fourDigitPin" placeholder="Four-Digit Pin" required><br>
+        <button type="submit">Signup</button>
+    </form>
+
+    <!-- Login Form -->
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="email" id="loginEmail" placeholder="Email"><br>
+        <input type="text" id="loginPhoneNumber" placeholder="Phone Number"><br>
+        <input type="number" id="loginPin" placeholder="Four-Digit Pin" required><br>
+        <button type="submit">Login</button>
+    </form>
+
+    <script>
+        // Signup Form Submission
+        document.getElementById('signupForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const data = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                DOB: document.getElementById('dob').value,
+                email: document.getElementById('email').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                createPassword: document.getElementById('createPassword').value,
+                Password: document.getElementById('password').value,
+                fourdigitPin: document.getElementById('fourDigitPin').value
+            };
+
+            const response = await fetch('/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        });
+
+        // Login Form Submission
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const data = {
+                email: document.getElementById('loginEmail').value,
+                phoneNumber: document.getElementById('loginPhoneNumber').value,
+                fourdigitPin: document.getElementById('loginPin').value
+            };
+
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        });
+    </script>
+</body>
+</html>
