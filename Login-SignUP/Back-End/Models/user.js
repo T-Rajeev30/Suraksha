@@ -1,8 +1,7 @@
-const { required } = require('joi');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-
+// Define the UserSchema
 const UserSchema = new Schema({
     firstName: {
         type: String,
@@ -10,9 +9,7 @@ const UserSchema = new Schema({
     },
     lastName: {
         type: String,
-        required: function () {
-            return this.lastName != null && this.lastName !== '';
-        },
+        required: false, // Remove condition to simplify
     },
     DOB: {
         type: Date, 
@@ -24,7 +21,7 @@ const UserSchema = new Schema({
         sparse: true,
         validate: {
             validator: function (v) {
-                return this.phoneNumber || v; 
+                return !!v || !!this.phoneNumber; // Either email or phone number must be present
             },
             message: 'Either email or phone number must be provided.'
         }
@@ -35,23 +32,30 @@ const UserSchema = new Schema({
         sparse: true, 
         validate: {
             validator: function (v) {
-                return this.email || v; 
+                return !!v || !!this.email; // Either phone number or email must be present
             },
             message: 'Either email or phone number must be provided.'
         }
     },
-    createPassword:{
+    createPassword: {
         type: String,
         required: true,
     },
-    Password:{
+    Password: {
         type: String,
         required: true,
+    },
+    fourdigitPin: {
+        type: Number,
+        required: true,
+        validate: {
+            validator: function (v) {
+                return /^\d{4}$/.test(v);
+            },
+            message: 'Pin must be a 10-digit number.'
+        }
     }
-
-    
 });
-
 
 const UserModel = mongoose.model('users', UserSchema);
 module.exports = UserModel;
